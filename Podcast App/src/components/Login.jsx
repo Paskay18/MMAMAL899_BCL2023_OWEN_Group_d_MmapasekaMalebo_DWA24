@@ -2,7 +2,6 @@ import React from "react"
 import {createClient} from "@supabase/supabase-js"
 import {Auth} from "@supabase/auth-ui-react"
 import { ThemeSupa} from "@supabase/auth-ui-shared"
-import { SupabaseAuthClient } from "@supabase/supabase-js/dist/module/lib/SupabaseAuthClient"
 import { useNavigate } from "react-router-dom"
 
 const supabase = createClient(
@@ -14,8 +13,21 @@ const supabase = createClient(
 
 
 export default function Login () {
-    
+   
     //give rules of whenn the user logs in and out 
+    
+    const navigate = useNavigate()
+    
+    supabase.auth.onAuthStateChange(async (event) => {
+          if (event  === "SIGNED_OUT"){
+            navigate("/login")}else{
+                navigate("/")
+            }
+    
+
+          
+    })
+   
 
     
     

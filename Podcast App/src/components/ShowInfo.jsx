@@ -7,33 +7,26 @@ export default function ShowDetails() {
 
 
     const params = useParams()
-
-    console.log(params)
     const [show, setShowData] = React.useState(null)
-   
-    
-    
+  
     React.useEffect(() => {
     fetch(`https://podcast-api.netlify.app/id/${params.id}`)
     .then(response =>response.json())
     .then(data => setShowData(data))
-     }, [params.id])
 
 
-   
-
+    }, [params.id])
+  
+  
     return (
-   
-   <div>
+    <div>
         {show ?(
     
            <div key={show.id}>
               <img src={show.image} width="50%"/>
               <h2>{show.title}</h2>
               <h4>{show.description}</h4>
-             <Seasons />
-        /**
-        need to add seasons and updated */
+              <Seasons />
 
 
 

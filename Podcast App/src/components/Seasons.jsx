@@ -25,8 +25,9 @@ export default function Seasons() {
     <div>
       {seasons.length > 0 ? (
         seasons.map((season) => (
-          <div key={season.season}>
-            <button onClick={() => handleSeasonClick(season)}>
+          
+          <div className="container text-center fw-light black-bg" key={season.season}>
+            <button type="button" className="btn btn-outline-light "onClick={() => handleSeasonClick(season)}>
               <h4>{season.description}</h4>
               <img src={season.image} width="20%" alt={season.title} />
               {season.title}

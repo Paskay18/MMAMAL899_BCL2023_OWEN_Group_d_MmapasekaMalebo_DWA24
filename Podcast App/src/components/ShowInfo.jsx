@@ -1,6 +1,7 @@
 import React from "react"
 import { useParams } from "react-router-dom"
 import Seasons from "./Seasons"
+import { Link } from "react-router-dom"
 
 
 export default function ShowDetails() {
@@ -21,11 +22,18 @@ export default function ShowDetails() {
     return (
     <div>
         {show ?(
-    
-           <div key={show.id}>
-              <img src={show.image} width="50%"/>
+           
+           <div className="container text-center p-3 fw-light " key={show.id}>
+            
+            <Link to="/">
+            <button type="button" className="btn btn-outline-light" >Back</button>
+            
+            
+            </Link>
+              <img className="rounded mx-auto d-block" src={show.image} width="40%"/>
               <h2>{show.title}</h2>
-              <h4>{show.description}</h4>
+              <h4 className="description fw-light">{show.description}</h4>
+             
               <Seasons />
 
 

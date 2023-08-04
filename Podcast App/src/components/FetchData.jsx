@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import Ofcanvas from "./Offcanvas";
 
 const genres = {
   1: "Personal Growth",
@@ -18,16 +17,26 @@ export default function HomeData() {
   // To search
   const [searchParams, setSearchParams] = useSearchParams();
   const typeFilter = parseInt(searchParams.get("genres"));
-  const [searchTerm, setSearchTerm] = React.useState(searchParams.get("search") || "");
-  const [sortOrder, setSortOrder] = React.useState("asc");
-  const [sortDateOrder, setSortDateOrder] = React.useState("ascending");
+  const [searchTerm, setSearchTerm] = useState(searchParams.get("search") || "");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [sortDateOrder, setSortDateOrder] = useState("ascending");
+  const [showGenres, setShowGenres] = useState(false); // State to toggle genres visibility
+  const [selectedGenre, setSelectedGenre] = useState(null);
+  const [showDescriptions, setShowDescriptions] = useState({}); // State to control the visibility of descriptions
+  const [show, setShowData] = useState([]);
+  const [loading, setLoading] = useState(true); // State to track the loading state
 
-  const [show, setShowData] = React.useState([]);
-
-  React.useEffect(() => {
+  useEffect(() => {
     fetch("https://podcast-api.netlify.app/shows")
       .then((response) => response.json())
-      .then((data) => setShowData(data));
+      .then((data) => {
+        setShowData(data);
+        setLoading(false); // Set loading to false once data is fetched
+      })
+      .catch((error) => {
+        console.error("Error fetching data:", error);
+        setLoading(false); // Set loading to false if there's an error
+      });
   }, []);
 
   const filteredShows = show.filter(
@@ -47,15 +56,48 @@ export default function HomeData() {
     }
   });
 
+  const handleToggleDescription = (showId) => {
+    setShowDescriptions((prevState) => ({
+      ...prevState,
+      [showId]: !prevState[showId],
+    }));
+  };
+
+  const formatUpdatedAt = (dateString) => {
+    const date = new Date(dateString);
+    const formattedDate = date.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+    return formattedDate;
+  };
   const showElements = sortedShows.map((show) => (
-    <div key={show.id} className="col-6 col-sm-3 col-md-3">
+    <div key={show.id} className="col-6 col-sm-3 col-md-3 black-bg container p-2 text-center fw-light p-3">
       <div className="card" style={{ width: "100%" }}>
         <div className="container">
           <div className="row">
             <Link to={`/${show.id}`}>
               <img src={show.image} className="card-img-top" width="50%" alt={show.title} />
             </Link>
-            {/* <Ofcanvas /> */}
+            <div>
+              <h3>
+                {/* Button to toggle description */}
+                <button
+                  type="button"
+                  className="btn btn-outline-light fw-light fs-5"
+                  onClick={() => handleToggleDescription(show.id)}
+                >
+                  {showDescriptions[show.id] ? "Hide Description" : "Show Description"}
+                </button>
+              </h3>
+              {/* Show the description only if showDescriptions[show.id] is true */}
+              {showDescriptions[show.id] && <h3>{show.description}</h3>}
+              {/* Format the date in a human-readable format */}
+              <h3 className="lastUpdated fw-light fs-5">
+                Last updated: {formatUpdatedAt(show.updated)}
+              </h3>
+            </div>
           </div>
         </div>
       </div>
@@ -65,7 +107,6 @@ export default function HomeData() {
   return (
     <div className="container">
       <div className="row">
-     
         <div>
           <input
             type="text"
@@ -73,97 +114,64 @@ export default function HomeData() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
-          <button onClick={() => setSearchParams({ search: searchTerm })}>Search</button>
-          <button onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}>
+          <button
+            type="button"
+            className="btn btn-outline-light"
+            onClick={() => setSearchParams({ search: searchTerm })}
+          >
+            Search
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline-light"
+            onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+          >
             Sort {sortOrder === "asc" ? "Z-A" : "A-Z"}
           </button>
-          <button onClick={() => setSortDateOrder(sortDateOrder === "ascending" ? "desc" : "asc")}>
+          <button
+            type="button"
+            className="btn btn-outline-light"
+            onClick={() =>
+              setSortDateOrder(sortDateOrder === "ascending" ? "desc" : "asc")
+            }
+          >
             Sort by Date {sortDateOrder === "ascending" ? "Newest First" : "Oldest First"}
           </button>
+          <Link to="/">
+            <button type="button" className="btn btn-outline-light">
+              Back
+            </button>
+          </Link>
         </div>
       </div>
-      <div className="row">{showElements}</div>
+      <div>
+        {/* Genres button */}
+        <button
+          type="button"
+          className="btn btn-outline-light"
+          onClick={() => setShowGenres((prevState) => !prevState)}
+        >
+          Genres
+        </button>
+        {showGenres && (
+          <ul>
+            {Object.keys(genres).map((genreId) => (
+              <div key={genreId}>
+                <button className="btn btn-outline-light">
+                  <Link to={`?genres=${genreId}`}>{genres[genreId]}</Link>
+                </button>
+              </div>
+            ))}
+            <div>
+              <button className="btn btn-outline-light">
+                <Link to=".">Clear</Link>
+              </button>
+            </div>
+          </ul>
+        )}
+      </div>
+      {/* Show loading state if data is still being fetched */}
+      {loading ? <h2>Loading...</h2> : <div className="row">{showElements}</div>}
     </div>
   );
 }
-
-  
-  
-  
- 
-  // const sortedShows = filteredShows.slice().sort((a, b) => {
-  //   const titleA = a.title.toLowerCase();
-  //   const titleB = b.title.toLowerCase();
-  //   if (sortOrder === "asc") {
-  //     return titleA.localeCompare(titleB);
-  //   } else {
-  //     return titleB.localeCompare(titleA);
-  //   }
-  // });
-
-
-
-
-
-
-
-
-
-
-
- 
-// React.useEffect(()=> {
-//     fetch("https://podcast-api.netlify.app/shows")
-//     .then(response => response.json())
-//     .then((data) => {
-
-//         const fetching = data
-//         .map((show) => {
-           
-//             return(
-           
-//             <div key={show.id} className="col-6 col-sm-3 col-md-3" >
-//                  <div className="card" style={{width:"100%"}}>
-//                  <div className="container">
-//                 <div className="row">
-                  
-//                     <Link to = {`/${show.id}`}>
-//             <img src={show.image} className="card-img-top" width = "50%"/>
-            
-//                 </Link>
-                  
-//                 </div>
-//                 </div>
-                
-//                   </div>
-//             </div>
-//             );
-//         });
-//         setShowData(fetching);
-//     })
-//   }, []);
-
-
-
-
-//  return (
-//     <div className="container">
-//     <div className="row">
-
-//     <div >
-//               <Link to="?genres=1" >Personal Growth</Link>
-//               <Link to="?genres=2" >Crime & Journalism</Link>
-//               <Link to="?genres=3">History</Link>
-//               <Link to="?genres=4">Comedy</Link>
-//               <Link to="?genres=5" >Entertainment</Link>
-//               <Link to="?genres=6" >Business</Link>
-//               <Link to="?genres=7">Fiction</Link>
-//               <Link to="?genres=8">News</Link>
-//               <Link to="?genres=9">Kids and Family</Link>
-//               <Link to="." >Clear</Link>
-//             </div>
-//       {show}
-//     </div>
-//   </div>
-// )
-

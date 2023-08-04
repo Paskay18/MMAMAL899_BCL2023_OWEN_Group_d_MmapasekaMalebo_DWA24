@@ -2,10 +2,11 @@ import React from "react"
 import { useParams } from "react-router-dom"
 import Seasons from "./Seasons"
 import { Link } from "react-router-dom"
+import { v4 as uuidv4, v5 as uuidv5 } from "uuid"
 
 
 export default function ShowDetails() {
-
+   const v4Id = uuidv4()
 
     const params = useParams()
     const [show, setShowData] = React.useState(null)
@@ -23,7 +24,7 @@ export default function ShowDetails() {
     <div>
         {show ?(
            
-           <div className="container text-center p-3 fw-light " key={show.id}>
+           <div className="container text-center p-3 fw-light " key={v4Id } >
             
             <Link to="/">
             <button type="button" className="btn btn-outline-light" >Back</button>
